@@ -1,0 +1,5 @@
+tube-bridge==1.1.6
+uvicorn
+mcp>=1.28.1
+yt-dlp>=2026.8.19
+youtube-transcript-api

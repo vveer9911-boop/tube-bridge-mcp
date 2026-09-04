@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: tube-bridge-mcp
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
