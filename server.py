@@ -12,7 +12,7 @@ from tube_bridge.server import server
 import tube_bridge.tools as tools
 tbs_mod = sys.modules["tube_bridge.server"]
 
-# 1. Fast metadata extraction
+# 1. Fast metadata extraction via ytsearch
 async def _fast_video_info(video_id: str) -> dict:
     cached = tools.cache.get_video_info(video_id)
     if cached:
@@ -30,7 +30,7 @@ async def _fast_video_info(video_id: str) -> dict:
 
 tbs_mod.video_info = _fast_video_info
 
-# 2. Robust transcript extraction via yt-dlp
+# 2. Robust transcript extraction via yt-dlp android client (bypasses YouTube 403 blocks)
 async def _robust_transcript(video_id: str, lang: str | None = None, with_timestamps: bool = False) -> dict:
     def _fetch_subs():
         url = f"https://youtube.com/watch?v={video_id}"
@@ -42,11 +42,11 @@ async def _robust_transcript(video_id: str, lang: str | None = None, with_timest
                 "--sub-lang", f"{target_lang}.*,{target_lang}",
                 "--sub-format", "vtt/srt/best",
                 "--output", os.path.join(tmpdir, "sub.%(ext)s"),
-                "--extractor-args", "youtube:player_client=android,web",
+                "--extractor-args", "youtube:player_client=android",
                 url
             ]
             res = subprocess.run(cmd, capture_output=True, text=True, timeout=25)
-            files = [f for f in glob.glob(os.path.join(tmpdir, "*")) if not f.endswith(".ytdl")]
+            files = [f for f in glob.glob(os.path.join(tmpdir, "*")) if not f.endswith(".ytdl") and not f.endswith(".part")]
             if not files:
                 raise RuntimeError(f"yt-dlp exit {res.returncode}: {res.stderr.strip()[-300:]}")
             
