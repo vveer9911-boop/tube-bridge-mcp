@@ -3,11 +3,14 @@ import glob
 import os
 import re
 import subprocess
+import sys
 import tempfile
 import uvicorn
 from starlette.responses import JSONResponse
 
+from tube_bridge.server import server
 import tube_bridge.tools as tools
+tbs_mod = sys.modules["tube_bridge.server"]
 
 # 1. Fast, robust metadata extraction via ytsearch
 async def _fast_video_info(video_id: str) -> dict:
@@ -23,15 +26,14 @@ async def _fast_video_info(video_id: str) -> dict:
         res = info.to_dict()
         tools.cache.set_video_info(video_id, res)
         return res
-    return await tools._orig_video_info(video_id)
+    return await tools.video_info(video_id)
 
-tools._orig_video_info = tools.video_info
-tools.video_info = _fast_video_info
+tbs_mod.video_info = _fast_video_info
 
 # 2. Cloud-compatible transcript extraction via yt-dlp (bypasses YouTube 403 blocks)
-async def _robust_transcript(video_id: str, lang: str | None, with_timestamps: bool = False) -> dict:
+async def _robust_transcript(video_id: str, lang: str | None = None, with_timestamps: bool = False) -> dict:
     try:
-        return await tools._orig_transcript(video_id, lang, with_timestamps)
+        return await tools.transcript(video_id, lang, with_timestamps)
     except Exception:
         pass
 
@@ -83,10 +85,8 @@ async def _robust_transcript(video_id: str, lang: str | None, with_timestamps: b
 
     return await asyncio.to_thread(_fetch_subs)
 
-tools._orig_transcript = tools.transcript
-tools.transcript = _robust_transcript
+tbs_mod.transcript = _robust_transcript
 
-from tube_bridge.server import server
 from tube_bridge.transport import create_app
 
 port = int(os.environ.get("PORT", 8080))
