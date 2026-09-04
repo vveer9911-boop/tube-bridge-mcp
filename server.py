@@ -12,7 +12,7 @@ from tube_bridge.server import server
 import tube_bridge.tools as tools
 tbs_mod = sys.modules["tube_bridge.server"]
 
-# 1. Fast, robust metadata extraction via ytsearch
+# 1. Fast metadata extraction
 async def _fast_video_info(video_id: str) -> dict:
     cached = tools.cache.get_video_info(video_id)
     if cached:
@@ -30,13 +30,8 @@ async def _fast_video_info(video_id: str) -> dict:
 
 tbs_mod.video_info = _fast_video_info
 
-# 2. Cloud-compatible transcript extraction via yt-dlp (bypasses YouTube 403 blocks)
+# 2. Robust transcript extraction via yt-dlp
 async def _robust_transcript(video_id: str, lang: str | None = None, with_timestamps: bool = False) -> dict:
-    try:
-        return await tools.transcript(video_id, lang, with_timestamps)
-    except Exception:
-        pass
-
     def _fetch_subs():
         url = f"https://youtube.com/watch?v={video_id}"
         target_lang = lang or "en"
@@ -45,15 +40,16 @@ async def _robust_transcript(video_id: str, lang: str | None = None, with_timest
                 "yt-dlp", "--skip-download",
                 "--write-sub", "--write-auto-sub",
                 "--sub-lang", f"{target_lang}.*,{target_lang}",
-                "--sub-format", "vtt",
+                "--sub-format", "vtt/srt/best",
                 "--output", os.path.join(tmpdir, "sub.%(ext)s"),
                 "--extractor-args", "youtube:player_client=android,web",
                 url
             ]
-            subprocess.run(cmd, capture_output=True, text=True, timeout=25)
-            files = glob.glob(os.path.join(tmpdir, "*.vtt"))
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=25)
+            files = [f for f in glob.glob(os.path.join(tmpdir, "*")) if not f.endswith(".ytdl")]
             if not files:
-                raise RuntimeError(f"No transcript or captions found for video {video_id}")
+                raise RuntimeError(f"yt-dlp exit {res.returncode}: {res.stderr.strip()[-300:]}")
+            
             with open(files[0], "r", encoding="utf-8", errors="replace") as f:
                 vtt_text = f.read()
 
