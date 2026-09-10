@@ -100,7 +100,7 @@ import contextlib
 from mcp.types import Tool, CallToolResult, ImageContent, TextContent
 from starlette.responses import FileResponse, JSONResponse
 from tube_bridge.youtube.client import extract_video_id
-import tube_bridge.extended_tools as ext_tools
+import extended_tools as ext_tools
 
 public_dir = os.path.join(tempfile.gettempdir(), "tube_bridge_public")
 os.makedirs(public_dir, exist_ok=True)
