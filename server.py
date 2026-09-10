@@ -183,6 +183,7 @@ async def _do_watch_video(args: dict) -> CallToolResult:
     dl_cmd = [
         "yt-dlp", "--no-warnings", "--no-playlist",
         "--download-sections", f"*{start_fmt}-{end_fmt}",
+        "--extractor-args", "youtube:player_client=ios,tv,web",
         "--format", "bestvideo[height<=720]/best[height<=720]/best",
         "--output", clip_file,
         f"https://www.youtube.com/watch?v={video_id}"

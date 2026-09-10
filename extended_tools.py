@@ -54,6 +54,7 @@ async def download_video_segment(url: str, start_time: str | int | float, end_ti
         ytdlp_bin,
         "--no-warnings",
         "--no-playlist",
+        "--extractor-args", "youtube:player_client=ios,tv,web",
         "--download-sections", f"*{start_fmt}-{end_fmt}",
         "--format", "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
         "--output", out_template,
