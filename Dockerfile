@@ -15,7 +15,7 @@ ENV PATH="${DENO_INSTALL}/bin:${PATH}"
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY server.py /app/
+COPY server.py extended_tools.py /app/
 
 ENV PORT=10000
 EXPOSE 10000
