@@ -293,7 +293,7 @@ async def cleanup_task():
             for root, dirs, files in os.walk(public_dir):
                 for f in files:
                     fpath = os.path.join(root, f)
-                    if now - os.path.getmtime(fpath) > 300: # 5 minutes
+                    if now - os.path.getmtime(fpath) > 600: # 10 minutes
                         os.remove(fpath)
             # also cleanup empty dirs
             for root, dirs, files in os.walk(public_dir, topdown=False):
