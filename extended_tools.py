@@ -122,8 +122,9 @@ async def analyze_video_frames(url: str, start_time: str | int | float = 0, end_
             "--download-sections", f"*{start_fmt}-{end_fmt}",
             "--format", "bestvideo[height<=720]/best[height<=720]/best",
             "--output", str(clip_file),
-            watch_url
         ]
+        dl_cmd.extend(["--cookies", "cookies.txt"])
+        dl_cmd.append(watch_url)
         
         env = os.environ.copy()
         scripts_dir = str(Path(__file__).parent.parent.parent.parent / "Scripts")

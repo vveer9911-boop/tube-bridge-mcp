@@ -14,8 +14,9 @@ ENV PATH="${DENO_INSTALL}/bin:${PATH}"
 
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -U "yt-dlp[default]"
 
-COPY server.py extended_tools.py /app/
+COPY server.py extended_tools.py cookies.txt /app/
 
 ENV PORT=10000
 EXPOSE 10000
