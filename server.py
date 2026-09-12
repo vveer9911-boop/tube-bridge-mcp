@@ -132,6 +132,7 @@ download_segment_tool = Tool(
             "url": {"type": "string", "description": "YouTube video URL or ID"},
             "start_time": {"type": "string", "description": "Start timestamp (e.g. '01:15')"},
             "end_time": {"type": "string", "description": "End timestamp (e.g. '02:30')"},
+            "filename": {"type": "string", "description": "Optional custom filename, e.g. 'segment1.mp4'"}
         },
         "required": ["url", "start_time", "end_time"]
     }
@@ -146,6 +147,7 @@ async def _do_download_video_segment(args: dict) -> CallToolResult:
     video_id = extract_video_id(args["url"])
     start_time = args["start_time"]
     end_time = args["end_time"]
+    custom_name = args.get("filename")
     
     download_dir = os.path.join(public_dir, "downloads")
     os.makedirs(download_dir, exist_ok=True)
@@ -156,6 +158,15 @@ async def _do_download_video_segment(args: dict) -> CallToolResult:
     )
     
     file_path = res["clip_file"]
+    if custom_name:
+        if not custom_name.endswith(".mp4"):
+            custom_name += ".mp4"
+        new_path = os.path.join(download_dir, custom_name)
+        if os.path.exists(new_path):
+            os.remove(new_path)
+        os.rename(file_path, new_path)
+        file_path = new_path
+
     file_name = os.path.basename(file_path)
     render_url = f"https://tube-bridge-mcp.onrender.com/public/downloads/{file_name}"
     
