@@ -116,10 +116,12 @@ async def analyze_video_frames(url: str, start_time: str | int | float = 0, end_
         end_fmt = format_time_str(end_sec)
         
         dl_cmd = [
-            "yt-dlp",
+            r"C:\Users\taufe\AppData\Roaming\Python\Python310\Scripts\yt-dlp.exe",
             "--no-warnings",
             "--no-playlist",
+            "--force-ipv6",
             "--download-sections", f"*{start_fmt}-{end_fmt}",
+            "--extractor-args", "youtube:player_client=android",
             "--format", "bestvideo[height<=720]/best[height<=720]/best",
             "--output", str(clip_file),
         ]

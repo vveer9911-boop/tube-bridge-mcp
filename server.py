@@ -192,9 +192,9 @@ async def _do_watch_video(args: dict) -> CallToolResult:
     clip_file = os.path.join(frames_dir, "clip.mp4")
     
     dl_cmd = [
-        "yt-dlp", "--no-warnings", "--no-playlist",
+        r"C:\Users\taufe\AppData\Roaming\Python\Python310\Scripts\yt-dlp.exe", "--no-warnings", "--no-playlist", "--force-ipv6",
         "--download-sections", f"*{start_fmt}-{end_fmt}",
-        "--extractor-args", "youtube:player_client=ios,tv,web",
+        "--extractor-args", "youtube:player_client=android",
         "--format", "bestvideo[height<=720]/best[height<=720]/best",
         "--cookies", "cookies.txt",
         "--output", clip_file,
