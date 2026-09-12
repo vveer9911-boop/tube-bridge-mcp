@@ -6,7 +6,7 @@ import subprocess
 import sys
 import tempfile
 import uvicorn
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, FileResponse
 
 from tube_bridge.server import server
 import tube_bridge.tools as tools
