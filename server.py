@@ -100,7 +100,7 @@ async def _do_analyze_copied_content(args: dict) -> CallToolResult:
         )
         
         payload = {
-            "model": "gemini-1.5-flash",
+            "model": "gemini-3.6-flash",
             "messages": [{"role": "user", "content": prompt}]
         }
         
