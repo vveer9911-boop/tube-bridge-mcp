@@ -1,9 +1,19 @@
 services:
   - type: web
     name: tube-bridge-mcp
-    runtime: docker
-    plan: free
-    healthCheckPath: /health
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python server.py"
     envVars:
       - key: PORT
-        value: 10000
+        value: "8080"
+      - key: FREELLMAPI_ENDPOINT
+        value: "https://freellmapi.co/v1/chat/completions" # Or their own if deployed
+  - type: web
+    name: freellmapi
+    env: docker
+    dockerfilePath: ./freellmapi/Dockerfile
+    dockerContext: ./freellmapi
+    envVars:
+      - key: PORT
+        value: "3001"

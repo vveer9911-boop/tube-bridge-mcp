@@ -47,16 +47,20 @@ async def download_video_segment(url: str, start_time: str | int | float, end_ti
     out_prefix = f"clip_{video_id}_{int(start_sec)}_{int(end_sec)}"
     out_template = str(out_dir / f"{out_prefix}.%(ext)s")
     
-    scripts_dir = str(Path(__file__).parent.parent.parent.parent / "Scripts")
-    ytdlp_bin = os.path.join(scripts_dir, "yt-dlp.exe") if os.path.exists(os.path.join(scripts_dir, "yt-dlp.exe")) else "yt-dlp"
+    scripts_dir = r"c:\Users\taufe\Desktop\antigravirty\mcp\custom_env\Scripts"
+    ytdlp_bin = r"C:\Users\taufe\AppData\Roaming\Python\Python310\Scripts\yt-dlp.exe"
+    if not os.path.exists(ytdlp_bin):
+        ytdlp_bin = os.path.join(scripts_dir, "yt-dlp.exe") if os.path.exists(os.path.join(scripts_dir, "yt-dlp.exe")) else "yt-dlp"
     
     cmd = [
         ytdlp_bin,
         "--no-warnings",
         "--no-playlist",
-        "--extractor-args", "youtube:player_client=ios,tv,web",
+        "--force-ipv6",
         "--download-sections", f"*{start_fmt}-{end_fmt}",
-        "--format", "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
+        "--extractor-args", "youtube:player_client=android",
+        "--format", "bestvideo[height<=720]/best[height<=720]/best",
+        "--cookies", "cookies.txt",
         "--output", out_template,
         watch_url
     ]
