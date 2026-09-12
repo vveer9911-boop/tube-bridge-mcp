@@ -7,13 +7,14 @@ services:
     envVars:
       - key: PORT
         value: "8080"
-      - key: FREELLMAPI_ENDPOINT
-        value: "https://freellmapi.co/v1/chat/completions" # Or their own if deployed
+      - key: OMNIROUTE_ENDPOINT
+        value: "http://omniroute:20128/v1/chat/completions" # Internal Render DNS
+  
   - type: web
-    name: freellmapi
-    env: docker
-    dockerfilePath: ./freellmapi/Dockerfile
-    dockerContext: ./freellmapi
+    name: omniroute
+    env: image
+    image:
+      url: diegosouzapw/omniroute:latest
     envVars:
       - key: PORT
-        value: "3001"
+        value: "20128"

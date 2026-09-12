@@ -2,21 +2,15 @@ import asyncio
 import os
 import re
 import sys
-import tempfile
 import json
-import base64
-from mcp.types import Tool, CallToolResult, TextContent, ImageContent
+from mcp.types import Tool, CallToolResult, TextContent
 import requests
 import tube_bridge.tools as tools
 from tube_bridge.server import server
-from tube_bridge.youtube.client import extract_video_id
 from tube_bridge.transport import create_app
 import uvicorn
 
 tbs_mod = sys.modules['tube_bridge.server']
-
-# We are removing the old video downloading and frame extraction tools
-# and replacing them with tools that rely on the FreeLLMAPI and Gemini 1.5 Flash.
 
 search_youtube_tool = Tool(
     name="search_youtube",
@@ -54,7 +48,6 @@ async def _do_search_youtube(args: dict) -> CallToolResult:
     query = args["query"]
     max_results = args.get("max_results", 5)
     
-    # Use yt-dlp to just get search results (ytsearch usually works without IP ban)
     cmd = [
         "yt-dlp", f"ytsearch{max_results}:{query}",
         "--dump-json", "--no-warnings", "--flat-playlist"
@@ -83,10 +76,10 @@ async def _do_search_youtube(args: dict) -> CallToolResult:
 async def _do_analyze_copied_content(args: dict) -> CallToolResult:
     video_urls = args["video_urls"]
     
-    # We will use the FreeLLMAPI endpoint to call Gemini 1.5 Flash.
-    # The API key should be provided by the user via environment variable or FreeLLMAPI dashboard.
-    api_url = os.environ.get("FREELLMAPI_ENDPOINT", "http://localhost:3001/v1/chat/completions")
-    api_key = os.environ.get("FREELLMAPI_KEY", "dummy-key-if-not-set")
+    # We will use the OmniRoute endpoint running locally on Render or a public URL.
+    api_url = os.environ.get("OMNIROUTE_ENDPOINT", "http://localhost:20128/v1/chat/completions")
+    # OmniRoute might require a key if configured, otherwise we just pass a dummy
+    api_key = os.environ.get("OMNIROUTE_KEY", "dummy-key")
     
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -103,7 +96,7 @@ async def _do_analyze_copied_content(args: dict) -> CallToolResult:
             "2. Find the best 10 to 15-second timestamped part that represents the core content or copied segment.\n"
             "Format your response EXACTLY like this for each segment found:\n"
             "script segment no | segment description | yt url | start_time-end_time\n"
-            "Example: 1 | The creator talks about X | https://www.youtube.com/watch?v=abc | 01:10-01:25"
+            "Example: 1 | The creator talks about X | {url} | 01:10-01:25"
         )
         
         payload = {
@@ -115,8 +108,11 @@ async def _do_analyze_copied_content(args: dict) -> CallToolResult:
             resp = await asyncio.to_thread(lambda: requests.post(api_url, json=payload, headers=headers, timeout=60))
             if resp.status_code == 200:
                 data = resp.json()
-                text = data["choices"][0]["message"]["content"]
-                output_segments.append(text)
+                try:
+                    text = data["choices"][0]["message"]["content"]
+                    output_segments.append(text)
+                except KeyError:
+                    output_segments.append(f"Failed to parse OmniRoute response for {url}")
             else:
                 output_segments.append(f"Failed to analyze {url}: {resp.status_code} {resp.text}")
         except Exception as e:
